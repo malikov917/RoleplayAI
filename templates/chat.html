@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}{{ session.situation.title }} - {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .chat-container {
+        height: calc(100vh - 200px);
+    }
+    .message-area {
+        height: calc(100% - 120px);
+    }
+    .message-bubble {
+        animation: fadeInUp 0.3s ease-out;
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .typing-indicator {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Session Header -->
+    <div class="bg-white rounded-lg shadow-lg mb-6 p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="p-3 rounded-lg {% if session.situation.category == 'career' %}bg-emerald-100 text-emerald-700{% elif session.situation.category == 'customer_service' %}bg-orange-100 text-orange-700{% elif session.situation.category == 'social' %}bg-pink-100 text-pink-700{% elif session.situation.category == 'management' %}bg-purple-100 text-purple-700{% elif session.situation.category == 'networking' %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+                    {% if session.situation.category == 'career' %}
+                        <i class="fas fa-briefcase text-xl"></i>
+                    {% elif session.situation.category == 'customer_service' %}
+                        <i class="fas fa-headset text-xl"></i>
+                    {% elif session.situation.category == 'social' %}
+                        <i class="fas fa-heart text-xl"></i>
+                    {% elif session.situation.category == 'management' %}
+                        <i class="fas fa-users-cog text-xl"></i>
+                    {% elif session.situation.category == 'networking' %}
+                        <i class="fas fa-network-wired text-xl"></i>
+                    {% else %}
+                        <i class="fas fa-comments text-xl"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">{{ session.situation.title }}</h1>
+                    <p class="text-slate-600">{{ session.situation.description }}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <span class="px-3 py-1 text-xs font-medium rounded-full {% if session.situation.difficulty_level == 'beginner' %}bg-green-100 text-green-700{% elif session.situation.difficulty_level == 'intermediate' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ session.situation.difficulty_level.title() }}
+                </span>
+                <button id="end-session-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <i class="fas fa-stop"></i>
+                    <span>End Session</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="bg-white rounded-lg shadow-lg chat-container">
+        <!-- Messages Area -->
+        <div id="messages-container" class="message-area overflow-y-auto p-6 space-y-4">
+            {% for message in session.messages %}
+            <div class="flex {% if message.message_type == 'user' %}justify-end{% else %}justify-start{% endif %} message-bubble" data-message-id="{{ message.id }}">
+                <div class="max-w-xs lg:max-w-md">
+                    <div class="flex items-end space-x-2 {% if message.message_type == 'user' %}flex-row-reverse space-x-reverse{% endif %}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center {% if message.message_type == 'user' %}bg-primary-600 text-white{% else %}bg-slate-300 text-slate-700{% endif %}">
+                            {% if message.message_type == 'user' %}
+                                <i class="fas fa-user text-sm"></i>
+                            {% else %}
+                                <i class="fas fa-robot text-sm"></i>
+                            {% endif %}
+                        </div>
+                        <div class="{% if message.message_type == 'user' %}bg-primary-600 text-white{% else %}bg-slate-100 text-slate-800{% endif %} rounded-lg px-4 py-3 shadow-sm">
+                            <p class="text-sm leading-relaxed">{{ message.content }}</p>
+                            <p class="text-xs mt-1 {% if message.message_type == 'user' %}text-primary-100{% else %}text-slate-500{% endif %}" data-timestamp="{{ message.timestamp.isoformat() }}">
+                                {{ message.timestamp.strftime('%H:%M') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Typing Indicator (Hidden by default) -->
+        <div id="typing-indicator" class="px-6 pb-2 hidden">
+            <div class="flex justify-start">
+                <div class="max-w-xs lg:max-w-md">
+                    <div class="flex items-end space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center">
+                            <i class="fas fa-robot text-sm"></i>
+                        </div>
+                        <div class="bg-slate-100 rounded-lg px-4 py-3 shadow-sm">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-slate-400 rounded-full typing-indicator"></div>
+                                <div class="w-2 h-2 bg-slate-400 rounded-full typing-indicator" style="animation-delay: 0.2s;"></div>
+                                <div class="w-2 h-2 bg-slate-400 rounded-full typing-indicator" style="animation-delay: 0.4s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="border-t border-slate-200 p-6">
+            <form id="message-form" class="flex space-x-4">
+                <input type="hidden" name="user_uuid" value="{{ user.session_uuid }}">
+                <div class="flex-1">
+                    <textarea id="message-input" name="message" placeholder="Type your response..." rows="2" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" required></textarea>
+                </div>
+                <button type="submit" id="send-btn" class="px-6 py-3 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2 font-medium">
+                    <span>Send</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- End Session Modal -->
+<div id="end-session-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-question-circle text-orange-600 text-2xl"></i>
+            </div>
+            
+            <h3 class="text-lg font-semibold text-slate-800 mb-2">End Roleplay Session?</h3>
+            <p class="text-slate-600 mb-6">
+                Are you sure you want to end this session? You'll receive detailed feedback on your performance.
+            </p>
+            
+            <div class="flex space-x-3">
+                <button id="cancel-end-btn" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200">
+                    Continue Session
+                </button>
+                <button id="confirm-end-btn" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
+                    End & Get Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const sessionId = '{{ session.id }}';
+    const userUuid = '{{ user.session_uuid }}';
+    
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        const container = document.getElementById('messages-container');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    // Show typing indicator
+    function showTyping() {
+        document.getElementById('typing-indicator').classList.remove('hidden');
+        scrollToBottom();
+    }
+    
+    // Hide typing indicator
+    function hideTyping() {
+        document.getElementById('typing-indicator').classList.add('hidden');
+    }
+    
+    // Add message to chat
+    function addMessage(content, type, timestamp = null) {
+        const container = document.getElementById('messages-container');
+        const messageDiv = document.createElement('div');
+        
+        const time = formatTime(timestamp || new Date().toISOString());
+        
+        messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} message-bubble`;
+        messageDiv.innerHTML = `
+            <div class="max-w-xs lg:max-w-md">
+                <div class="flex items-end space-x-2 ${type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${type === 'user' ? 'bg-primary-600 text-white' : 'bg-slate-300 text-slate-700'}">
+                        <i class="fas fa-${type === 'user' ? 'user' : 'robot'} text-sm"></i>
+                    </div>
+                    <div class="${type === 'user' ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-800'} rounded-lg px-4 py-3 shadow-sm">
+                        <p class="text-sm leading-relaxed">${content}</p>
+                        <p class="text-xs mt-1 ${type === 'user' ? 'text-primary-100' : 'text-slate-500'}">
+                            ${time}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(messageDiv);
+        scrollToBottom();
+    }
+    
+    // Handle message form submission
+    document.getElementById('message-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const message = messageInput.value.trim();
+        
+        if (!message) return;
+        
+        // Disable input and show loading
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">Sending...</span>';
+        
+        // Add user message immediately
+        addMessage(message, 'user');
+        messageInput.value = '';
+        
+        // Show typing indicator
+        showTyping();
+        
+        try {
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('user_uuid', userUuid);
+            
+            const response = await fetch(`/session/${sessionId}/message`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            // Hide typing indicator
+            hideTyping();
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            // Add AI response
+            addMessage(result.ai_message.content, 'persona', result.ai_message.timestamp);
+            
+        } catch (error) {
+            hideTyping();
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+        } finally {
+            // Re-enable input
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<span>Send</span><i class="fas fa-paper-plane ml-2"></i>';
+            messageInput.focus();
+        }
+    });
+    
+    // Handle Enter key in textarea
+    document.getElementById('message-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('message-form').dispatchEvent(new Event('submit'));
+        }
+    });
+    
+    // End session modal handling
+    const endSessionBtn = document.getElementById('end-session-btn');
+    const endSessionModal = document.getElementById('end-session-modal');
+    const cancelEndBtn = document.getElementById('cancel-end-btn');
+    const confirmEndBtn = document.getElementById('confirm-end-btn');
+    
+    endSessionBtn.addEventListener('click', function() {
+        endSessionModal.classList.remove('hidden');
+        endSessionModal.classList.add('flex');
+    });
+    
+    cancelEndBtn.addEventListener('click', function() {
+        endSessionModal.classList.add('hidden');
+        endSessionModal.classList.remove('flex');
+    });
+    
+    confirmEndBtn.addEventListener('click', async function() {
+        confirmEndBtn.disabled = true;
+        confirmEndBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">Ending...</span>';
+        
+        try {
+            const formData = new FormData();
+            formData.append('user_uuid', userUuid);
+            
+            const response = await fetch(`/session/${sessionId}/end`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            // Redirect to feedback page
+            window.location.href = result.redirect_url;
+            
+        } catch (error) {
+            console.error('Error ending session:', error);
+            alert('Failed to end session. Please try again.');
+            confirmEndBtn.disabled = false;
+            confirmEndBtn.innerHTML = 'End & Get Feedback';
+        }
+    });
+    
+    // Initial scroll to bottom
+    scrollToBottom();
+    
+    // Focus on input
+    document.getElementById('message-input').focus();
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+.env
+MMAX/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / Editor folders
+.idea/
+.vscode/
+
+# Environment variables
+.env

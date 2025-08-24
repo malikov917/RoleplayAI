@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Session Review - {{ session.situation.title }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg mb-8 p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="p-3 rounded-lg {% if session.situation.category == 'career' %}bg-emerald-100 text-emerald-700{% elif session.situation.category == 'customer_service' %}bg-orange-100 text-orange-700{% elif session.situation.category == 'social' %}bg-pink-100 text-pink-700{% elif session.situation.category == 'management' %}bg-purple-100 text-purple-700{% elif session.situation.category == 'networking' %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+                    {% if session.situation.category == 'career' %}
+                        <i class="fas fa-briefcase text-xl"></i>
+                    {% elif session.situation.category == 'customer_service' %}
+                        <i class="fas fa-headset text-xl"></i>
+                    {% elif session.situation.category == 'social' %}
+                        <i class="fas fa-heart text-xl"></i>
+                    {% elif session.situation.category == 'management' %}
+                        <i class="fas fa-users-cog text-xl"></i>
+                    {% elif session.situation.category == 'networking' %}
+                        <i class="fas fa-network-wired text-xl"></i>
+                    {% else %}
+                        <i class="fas fa-comments text-xl"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">{{ session.situation.title }}</h1>
+                    <p class="text-slate-600">{{ session.situation.description }}</p>
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <div class="text-sm text-slate-500 mb-1">Session Duration</div>
+                <div class="text-lg font-semibold text-slate-800">
+                    {% if session.session_duration %}
+                        {{ '%d:%02d'|format(session.session_duration // 60, session.session_duration % 60) }}
+                    {% else %}
+                        In Progress
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <div class="flex items-center space-x-6 text-sm text-slate-600">
+                <span>
+                    <i class="fas fa-calendar mr-2"></i>
+                    {{ session.started_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </span>
+                <span>
+                    <i class="fas fa-comments mr-2"></i>
+                    {{ session.messages|length }} messages
+                </span>
+                <span class="px-3 py-1 text-xs font-medium rounded-full {% if session.situation.difficulty_level == 'beginner' %}bg-green-100 text-green-700{% elif session.situation.difficulty_level == 'intermediate' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ session.situation.difficulty_level.title() }}
+                </span>
+            </div>
+            
+            <div class="flex space-x-3">
+                {% if session.summary %}
+                <a href="/session/{{ session.id }}/feedback?user_uuid={{ user.session_uuid }}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Feedback</span>
+                </a>
+                {% endif %}
+                
+                <a href="/history?user_uuid={{ user.session_uuid }}" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to History</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversation Transcript -->
+    <div class="bg-white rounded-lg shadow-lg">
+        <div class="border-b border-slate-200 p-6">
+            <h2 class="text-xl font-semibold text-slate-800 flex items-center">
+                <i class="fas fa-file-alt text-blue-600 mr-3"></i>
+                Full Conversation Transcript
+            </h2>
+        </div>
+        
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {% if session.messages %}
+                {% for message in session.messages %}
+                <div class="flex {% if message.message_type == 'user' %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-xs lg:max-w-md">
+                        <div class="flex items-end space-x-2 {% if message.message_type == 'user' %}flex-row-reverse space-x-reverse{% endif %}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center {% if message.message_type == 'user' %}bg-primary-600 text-white{% else %}bg-slate-300 text-slate-700{% endif %}">
+                                {% if message.message_type == 'user' %}
+                                    <i class="fas fa-user text-sm"></i>
+                                {% else %}
+                                    <i class="fas fa-robot text-sm"></i>
+                                {% endif %}
+                            </div>
+                            <div class="{% if message.message_type == 'user' %}bg-primary-600 text-white{% else %}bg-slate-100 text-slate-800{% endif %} rounded-lg px-4 py-3 shadow-sm">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-medium {% if message.message_type == 'user' %}text-primary-100{% else %}text-slate-500{% endif %}">
+                                        {% if message.message_type == 'user' %}You{% else %}AI Persona{% endif %}
+                                    </span>
+                                    <span class="text-xs {% if message.message_type == 'user' %}text-primary-100{% else %}text-slate-500{% endif %}">
+                                        {{ message.timestamp.strftime('%H:%M') }}
+                                    </span>
+                                </div>
+                                <p class="text-sm leading-relaxed">{{ message.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-8">
+                    <i class="fas fa-comments text-slate-400 text-4xl mb-4"></i>
+                    <p class="text-slate-600">No messages in this session yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    {% if session.messages %}
+    <div class="bg-white rounded-lg shadow-lg mt-8 p-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+            <i class="fas fa-chart-bar text-green-600 mr-3"></i>
+            Session Statistics
+        </h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600">{{ session.messages|selectattr('message_type', 'equalto', 'user')|list|length }}</div>
+                <div class="text-sm text-blue-700">Your Messages</div>
+            </div>
+            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600">{{ session.messages|selectattr('message_type', 'equalto', 'persona')|list|length }}</div>
+                <div class="text-sm text-purple-700">AI Responses</div>
+            </div>
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+                <div class="text-2xl font-bold text-green-600">{{ (session.messages|selectattr('message_type', 'equalto', 'user')|map(attribute='content')|map('length')|sum / session.messages|selectattr('message_type', 'equalto', 'user')|list|length)|round|int if session.messages|selectattr('message_type', 'equalto', 'user')|list|length > 0 else 0 }}</div>
+                <div class="text-sm text-green-700">Avg. Length</div>
+            </div>
+            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                <div class="text-2xl font-bold text-orange-600">{{ session.messages|length // 2 }}</div>
+                <div class="text-sm text-orange-700">Exchanges</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 mt-8">
+        {% if session.summary %}
+        <a href="/session/{{ session.id }}/feedback?user_uuid={{ user.session_uuid }}" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+            <i class="fas fa-chart-line"></i>
+            <span>View Detailed Feedback</span>
+        </a>
+        {% endif %}
+        
+        <a href="/history?user_uuid={{ user.session_uuid }}" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+            <i class="fas fa-history"></i>
+            <span>View All Sessions</span>
+        </a>
+        
+        <a href="/?user_uuid={{ user.session_uuid }}" class="flex-1 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+            <i class="fas fa-plus"></i>
+            <span>Start New Session</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

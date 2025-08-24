@@ -1,0 +1,195 @@
+/* Custom styles for AI Roleplay Trainer */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Chat message animations */
+.message-bubble {
+    opacity: 1 !important;           /* Ensure always visible */
+    transform: translateY(0) !important;  /* Ensure proper position */
+    animation: fadeInUp 0.3s ease-out;    /* Animation as enhancement */
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Gradient text */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button hover effects */
+.btn-hover-lift {
+    transition: all 0.2s ease;
+}
+
+.btn-hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar animation */
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+/* Loading spinner */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Focus styles */
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    border-color: transparent;
+}
+
+/* Custom modal backdrop */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+}
+
+/* Responsive text */
+@media (max-width: 640px) {
+    .text-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Accessibility improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus visible for better keyboard navigation */
+.focus\:ring-2:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Custom shadows */
+.shadow-subtle {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.shadow-medium {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-strong {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Chat-specific styles */
+.chat-message {
+    max-width: 70%;
+}
+
+@media (max-width: 640px) {
+    .chat-message {
+        max-width: 85%;
+    }
+}
+
+/* Performance optimizations */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+    .dark\:bg-slate-800 {
+        background-color: #1e293b;
+    }
+    
+    .dark\:text-slate-200 {
+        color: #e2e8f0;
+    }
+}

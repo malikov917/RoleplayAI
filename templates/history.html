@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Session History - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-slate-800 mb-2">Your Practice Sessions</h1>
+        <p class="text-xl text-slate-600">Track your progress and review past conversations</p>
+    </div>
+
+    {% if sessions %}
+    <!-- Sessions Grid -->
+    <div class="space-y-6">
+        {% for session in sessions %}
+        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200">
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="p-3 rounded-lg {% if session.situation.category == 'career' %}bg-emerald-100 text-emerald-700{% elif session.situation.category == 'customer_service' %}bg-orange-100 text-orange-700{% elif session.situation.category == 'social' %}bg-pink-100 text-pink-700{% elif session.situation.category == 'management' %}bg-purple-100 text-purple-700{% elif session.situation.category == 'networking' %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {% if session.situation.category == 'career' %}
+                                <i class="fas fa-briefcase text-xl"></i>
+                            {% elif session.situation.category == 'customer_service' %}
+                                <i class="fas fa-headset text-xl"></i>
+                            {% elif session.situation.category == 'social' %}
+                                <i class="fas fa-heart text-xl"></i>
+                            {% elif session.situation.category == 'management' %}
+                                <i class="fas fa-users-cog text-xl"></i>
+                            {% elif session.situation.category == 'networking' %}
+                                <i class="fas fa-network-wired text-xl"></i>
+                            {% else %}
+                                <i class="fas fa-comments text-xl"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-1">{{ session.situation.title }}</h3>
+                            <p class="text-slate-600 mb-2">{{ session.situation.description }}</p>
+                            <div class="flex items-center space-x-4 text-sm text-slate-500">
+                                <span data-datestamp="{{ session.started_at.isoformat() }}">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    {{ session.started_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {% if session.session_duration %}
+                                        {{ '%d:%02d'|format(session.session_duration // 60, session.session_duration % 60) }}
+                                    {% else %}
+                                        In Progress
+                                    {% endif %}
+                                </span>
+                                <span>
+                                    <i class="fas fa-comments mr-1"></i>
+                                    {{ session.message_count }} messages
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 text-xs font-medium rounded-full {% if session.situation.difficulty_level == 'beginner' %}bg-green-100 text-green-700{% elif session.situation.difficulty_level == 'intermediate' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ session.situation.difficulty_level.title() }}
+                        </span>
+                        
+                        <span class="px-3 py-1 text-xs font-medium rounded-full {% if session.status == 'completed' %}bg-blue-100 text-blue-700{% elif session.status == 'active' %}bg-green-100 text-green-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ session.status.title() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    {% if session.status == 'active' %}
+                    <a href="/session/{{ session.id }}?user_uuid={{ user.session_uuid }}" class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+                        <i class="fas fa-play"></i>
+                        <span>Resume Session</span>
+                    </a>
+                    {% else %}
+                    <a href="/session/{{ session.id }}/review?user_uuid={{ user.session_uuid }}" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+                        <i class="fas fa-eye"></i>
+                        <span>Review Conversation</span>
+                    </a>
+                    
+                    <a href="/session/{{ session.id }}/feedback?user_uuid={{ user.session_uuid }}" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 text-center flex items-center justify-center space-x-2">
+                        <i class="fas fa-chart-line"></i>
+                        <span>View Feedback</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Start New Session Button -->
+    <div class="text-center mt-12">
+        <a href="/?user_uuid={{ user.session_uuid }}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200">
+            <i class="fas fa-plus"></i>
+            <span>Start New Practice Session</span>
+        </a>
+    </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-history text-slate-400 text-3xl"></i>
+        </div>
+        
+        <h3 class="text-2xl font-semibold text-slate-800 mb-4">No Practice Sessions Yet</h3>
+        <p class="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            Start your first roleplay session to begin improving your communication skills. Choose from various scenarios designed to challenge and develop your abilities.
+        </p>
+        
+        <a href="/?user_uuid={{ user.session_uuid }}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200">
+            <i class="fas fa-play"></i>
+            <span>Start Your First Session</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
