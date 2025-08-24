@@ -8,20 +8,6 @@ const LandingPage = () => {
   const [scrollY, setScrollY] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
   const testimonials = [
     {
       name: "Sarah M.",
@@ -42,6 +28,20 @@ const LandingPage = () => {
       rating: 5
     }
   ];
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [testimonials.length]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -441,40 +441,40 @@ const LandingPage = () => {
             <div>
               <h4 className="font-semibold mb-4 text-slate-300">Product</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Scenarios</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Beta Access</a></li>
+                <li><button type="button" className="hover:text-white transition-colors">Features</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Scenarios</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Pricing</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Beta Access</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-slate-300">Resources</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Success Stories</a></li>
+                <li><button type="button" className="hover:text-white transition-colors">Blog</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Help Center</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Community</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Success Stories</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-slate-300">Company</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className-="hover:text-white transition-colors">Partners</a></li>
+                <li><button type="button" className="hover:text-white transition-colors">About</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Careers</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Contact</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Partners</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-slate-300">Legal</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">GDPR</a></li>
+                <li><button type="button" className="hover:text-white transition-colors">Privacy Policy</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">Security</button></li>
+                <li><button type="button" className="hover:text-white transition-colors">GDPR</button></li>
               </ul>
             </div>
           </div>
